@@ -1,11 +1,5 @@
 from datetime import datetime
-import pandas as pd
 from scipy.optimize import brentq
-
-import metric_calc as MC
-
-ticker = 'SPY'          #insert a different ticker if needed
-stockdf = MC.metrics(ticker)
 
 class Account:
     def __init__(self, id: str):
@@ -51,6 +45,7 @@ class Account:
                 current_price = cur_pricelist[ticker]
                 position = self.positionlist[ticker]
                 if position.unrealisedPnLpct(current_price) <= -50:
+                    print("Stop loss enforced.")
                     if position.isShort:
                         position.buy(abs(position.net_shares), current_price, date)
                     else:
@@ -161,4 +156,4 @@ def calculate_mwr(cashflow_list: list[tuple[datetime, float]]) -> float:
             total += amount / ((1 + rate) ** (days / 365))
         return total
 
-    return brentq(npv, -0.9999, 10)
+    return brentq(npv, -0.9999, 10) * 100

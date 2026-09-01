@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import yfinance as yf
 from dateutil import parser as dateparser
+from dateutil.relativedelta import relativedelta
 
 # Set to "csv" or "xlsx" depending on preference.
 OUTPUT_FORMAT = "csv"
@@ -28,11 +29,12 @@ def _save(df: pd.DataFrame, path_no_ext: str) -> str:
 
 def fetch_and_save(ticker: str, start: str, end: str,
                     prices_dir: str = "rawpricesdata",
-                    dividends_dir: str = "dividendsdata") -> None:
+                    dividends_dir: str = "dividendsdata",
+                    buffer_years: int = 0) -> None:
     """
-    Fetch historical closing prices + volume, and dividend (ex-date) data
-    for `ticker` between `start` and `end`, and save each to its own file
-    in the given subfolders.
+    Fetch historical closing prices + volume, and dividend (ex-date) data for `ticker` between `start` and `end`, 
+    and save each to its own file in the given subfolders.
+    buffer_years appends additional data before the `start` date for purposes of calculations.
     """
 
     os.makedirs(prices_dir, exist_ok=True)
@@ -40,8 +42,11 @@ def fetch_and_save(ticker: str, start: str, end: str,
 
     stock = yf.Ticker(ticker)
 
+    requested_start = dateparser.parse(start)
+    fetch_start = (requested_start - relativedelta(years=buffer_years)).strftime("%Y-%m-%d")
+
     # --- Price + volume history ---
-    prices = stock.history(start=start, end=end, auto_adjust=False)
+    prices = stock.history(start=fetch_start, end=end, auto_adjust=False)
 
     if prices.empty:
         raise RuntimeError(
@@ -55,7 +60,8 @@ def fetch_and_save(ticker: str, start: str, end: str,
     prices["Date"] = prices["Date"].dt.strftime("%Y-%m-%d")
 
     prices_path = _save(prices, os.path.join(prices_dir, f"prices_{ticker}"))
-    print(f"Saved {len(prices)} price rows to {prices_path}")
+    print(f"Saved {len(prices)} price rows to {prices_path}"
+          f"(covers {fetch_start} to {end}, including {buffer_years}-year buffer before {start})")
 
     # --- Dividend history (ex-dividend dates) ---
     dividends = stock.dividends
@@ -73,13 +79,14 @@ def fetch_and_save(ticker: str, start: str, end: str,
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python fetch_data.py <TICKER> <START_DATE> <END_DATE>")
-        print("Example: python fetch_data.py SPY 2005-03-01 2026-08-31")
+    if len(sys.argv) not in (4, 5):
+        print("Usage: python fetch_data.py <TICKER> <START_DATE> <END_DATE> [BUFFER_YEARS]")
+        print("Example: python fetch_data.py SPY 2005-03-01 2026-08-31 5")
         sys.exit(1)
 
     ticker_arg = sys.argv[1]
     start_arg = parse_date(sys.argv[2])
     end_arg = parse_date(sys.argv[3])
+    buffer_arg = int(sys.argv[4]) if len(sys.argv) == 5 else 0
 
-    fetch_and_save(ticker_arg, start_arg, end_arg)
+    fetch_and_save(ticker_arg, start_arg, end_arg, buffer_years=buffer_arg)
