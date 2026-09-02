@@ -51,6 +51,21 @@ class Account:
                     else:
                         position.sell(abs(position.net_shares), current_price, date)
 
+    def take_profit(self, date: datetime, cur_pricelist: dict[str, float]) -> None:
+        ''' 
+        cur_pricelist is a dictionary of {ticker_str: current_price}.
+        checks all AssetPosition in self.positionlist, and closes any position if the unrealised PnL is >= 10%. 
+        '''
+        for ticker in list(self.positionlist.keys()):
+            if cur_pricelist[ticker]:
+                current_price = cur_pricelist[ticker]
+                position = self.positionlist[ticker]
+                if position.unrealisedPnLpct(current_price) >= 10:
+                    print("Take profit enforced.")
+                    if position.isShort:
+                        position.buy(abs(position.net_shares), current_price, date)
+                    else:
+                        position.sell(abs(position.net_shares), current_price, date)
 
     def closeAccount(self, date: datetime, cur_pricelist: dict[str, float]) -> float:
         ''' 
@@ -94,7 +109,7 @@ class AssetPosition:
         if self.tradehistory == set():
             self.isShort = False
         self.tradehistory.add(SingleTrade(self.ticker, units, price, date))
-        print(f"{units} shares of {self.ticker} bought at price {price} on {date.date()}")
+        print(f"Account {self.account.name}: {units} shares of {self.ticker} bought at price {price} on {date.date()}")
 
         if self.net_shares == 0:
             #position is reset if buying when short makes net_shares == 0.
@@ -106,7 +121,7 @@ class AssetPosition:
         if self.tradehistory == set():
             self.isShort = True
         self.tradehistory.add(SingleTrade(self.ticker, -1 * units, price, date))
-        print(f"{units} shares of {self.ticker} sold at price {price} on {date.date()}")
+        print(f"Account {self.account.name}: {units} shares of {self.ticker} sold at price {price} on {date.date()}")
 
         if self.net_shares == 0:
             #position is reset if selling when long makes net_shares == 0.
@@ -119,13 +134,13 @@ class AssetPosition:
                 if trade.units > 0:
                     totalcost += trade.amount()
                     totalunits += trade.units
-            return totalcost / totalunits
         else:                       #i.e. short position
             for trade in self.tradehistory:
                 if trade.units < 0:
                     totalcost -= trade.amount()
                     totalunits -= trade.units
-            return totalcost / totalunits
+
+        return totalcost / totalunits
 
     def unrealisedPnL(self, current_price: float) -> float:
         # this works for both short and long positions

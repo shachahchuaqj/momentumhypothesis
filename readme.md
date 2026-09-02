@@ -32,3 +32,11 @@ I will first use SPY over a 20-year period to do the comparison. Whatever positi
 Dividends: In a csv file named `dividends_{ticker}`, column A should be labelled `ExDate` and column B `Dividend`. Use `dt.strftime("%Y-%m-%d")` to convert the dates correctly. Save the csv file under the folder dividendsdata.
 
 Prices: in a csv file named `prices_{ticker}`, columns A,B,C should be labelled `Date`, `Close`, and `Volume`. Again use `dt.strftime("%Y-%m-%d")` to convert the dates correctly. Save the csv file under the folder rawpricesdata.
+
+## Preliminary Results
+
+An initial test saw the lump sum strategy have an MWR of 9.69%, DCA strategy with 7.13%, and momentum strategy with an abysmal -0.59%. The main problem with the momentum strategy was that too many times, a large long position was accumulated but held until an "extreme" selloff took place, in which all of the gains from the long were wiped out when stop-loss was enforced.
+
+A new strategy, "momentum with take profit" is then devised, where the position is entirely closed if the unrealised P/L exceeds 10%. Interestingly, this led to an MWR of just under -0.00%, and the profits were taken way too many times.
+
+The stop-loss limit is then tightened from -50% to -5%. The results are still abysmal with momentum having an MWR of -0.04% and momentum with take profit having an MWR of 0.07%.
