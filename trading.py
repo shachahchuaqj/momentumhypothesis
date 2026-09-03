@@ -35,37 +35,47 @@ class Account:
                 totalassetvalue += self.positionlist[ticker].net_shares * cur_pricelist[ticker]
         return self.balance + totalassetvalue
 
-    def stop_loss(self, date: datetime, cur_pricelist: dict[str, float]) -> None:
+    def stop_loss(self, date: datetime, cur_pricelist: dict[str, float], threshold: float = -50) -> dict[str, bool]:
         ''' 
         cur_pricelist is a dictionary of {ticker_str: current_price}.
-        checks all AssetPosition in self.positionlist, and closes any position if the unrealised PnL is <= -50%. 
+        checks all AssetPosition in self.positionlist, and closes any position if the unrealised PnL is <= threshold %.
+        returns a dictionary of {ticker_str: True / False} if stop-loss is enforced for that ticker.
         '''
+        enforced: dict[str, bool] = dict()
         for ticker in list(self.positionlist.keys()):
             if cur_pricelist[ticker]:
                 current_price = cur_pricelist[ticker]
                 position = self.positionlist[ticker]
-                if position.unrealisedPnLpct(current_price) <= -50:
+                enforced[ticker] = False
+                if position.unrealisedPnLpct(current_price) <= threshold:
                     print("Stop loss enforced.")
+                    enforced[ticker] = True
                     if position.isShort:
                         position.buy(abs(position.net_shares), current_price, date)
                     else:
                         position.sell(abs(position.net_shares), current_price, date)
+        return enforced
 
-    def take_profit(self, date: datetime, cur_pricelist: dict[str, float]) -> None:
+    def take_profit(self, date: datetime, cur_pricelist: dict[str, float], threshold: float = 10) -> dict[str, bool]:
         ''' 
         cur_pricelist is a dictionary of {ticker_str: current_price}.
-        checks all AssetPosition in self.positionlist, and closes any position if the unrealised PnL is >= 10%. 
+        checks all AssetPosition in self.positionlist, and closes any position if the unrealised PnL is >= threshold %. 
+        returns a dictionary of {ticker_str: True / False} if take-profit is enforced for that ticker.
         '''
+        enforced: dict[str, bool] = dict()
         for ticker in list(self.positionlist.keys()):
             if cur_pricelist[ticker]:
                 current_price = cur_pricelist[ticker]
                 position = self.positionlist[ticker]
-                if position.unrealisedPnLpct(current_price) >= 10:
+                enforced[ticker] = False
+                if position.unrealisedPnLpct(current_price) >= threshold:
                     print("Take profit enforced.")
+                    enforced[ticker] = True
                     if position.isShort:
                         position.buy(abs(position.net_shares), current_price, date)
                     else:
                         position.sell(abs(position.net_shares), current_price, date)
+        return enforced
 
     def closeAccount(self, date: datetime, cur_pricelist: dict[str, float]) -> float:
         ''' 

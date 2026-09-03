@@ -35,8 +35,21 @@ Prices: in a csv file named `prices_{ticker}`, columns A,B,C should be labelled 
 
 ## Preliminary Results
 
-An initial test saw the lump sum strategy have an MWR of 9.69%, DCA strategy with 7.13%, and momentum strategy with an abysmal -0.59%. The main problem with the momentum strategy was that too many times, a large long position was accumulated but held until an "extreme" selloff took place, in which all of the gains from the long were wiped out when stop-loss was enforced.
+An initial amount of 10,000 was deposited into all accounts. For DCA, the 10,000 was invested in equal amounts every 21 trading days.
+For the force strategy, 10 shares are bought / sold whenever an "extreme" event occured. The stop-loss was set at -50% unrealised P/L.
+A take-profit modification was also tested, where if the unrealised P/L went above 10%, then the position is closed.
 
-A new strategy, "momentum with take profit" is then devised, where the position is entirely closed if the unrealised P/L exceeds 10%. Interestingly, this led to an MWR of just under -0.00%, and the profits were taken way too many times.
+```
+--- Results ---
+Lump Sum MWR: 9.69%
+DCA MWR:      7.13%
+Force MWR: -0.59%
+{'Long buys executed': 65, 'Short sells executed': 23, 'Stop losses enforced': 22, 'Take-profits enforced': 0}
+Force with Take Profit MWR: -0.00%
+{'Long buys executed': 65, 'Short sells executed': 23, 'Stop losses enforced': 15, 'Take-profits enforced': 52}
+Force with Take Profit and No Stop Loss MWR: 0.82%
+{'Long buys executed': 65, 'Short sells executed': 23, 'Stop losses enforced': 0, 'Take-profits enforced': 48}
+```
 
-The stop-loss limit is then tightened from -50% to -5%. The results are still abysmal with momentum having an MWR of -0.04% and momentum with take profit having an MWR of 0.07%.
+Interestingly, trading on these extreme events alone seemed to perform way worse than DCA or even just simply buying and holding a lump sum. The best of the "force" strategies was to implement take-profit but not enforce any stop-loss; even then, the MWR was only 0.82%.
+Of course, the thresholds for the stop-loss and take-profit, as well as how many shares are bought/sold during an extreme event can be varied to find an "optimal" strategy, but this still seems insufficient to fix the huge discrepancy with the "lazier" yet more profitable approaches.
