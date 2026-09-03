@@ -47,7 +47,7 @@ class Account:
                 current_price = cur_pricelist[ticker]
                 position = self.positionlist[ticker]
                 enforced[ticker] = False
-                if position.unrealisedPnLpct(current_price) <= threshold:
+                if position.net_shares != 0 and position.unrealisedPnLpct(current_price) <= threshold:
                     print("Stop loss enforced.")
                     enforced[ticker] = True
                     if position.isShort:
@@ -68,7 +68,7 @@ class Account:
                 current_price = cur_pricelist[ticker]
                 position = self.positionlist[ticker]
                 enforced[ticker] = False
-                if position.unrealisedPnLpct(current_price) >= threshold:
+                if position.net_shares != 0 and position.unrealisedPnLpct(current_price) >= threshold:
                     print("Take profit enforced.")
                     enforced[ticker] = True
                     if position.isShort:

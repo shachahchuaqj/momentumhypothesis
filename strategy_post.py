@@ -36,15 +36,14 @@ def force_noextreme(amount: float, Xshares: float,
     for _, row in stockpricesdf.iterrows():
         date, price = row['Date'], row['Close']
         m_val, f_val = row['Momentum'], row['Force']
-        lower, upper = row['Force 2.5pct'], row['Force 97.5pct']
         last_price = price
         
         if date.date() in div_lookup.index and ticker in accountM.positionlist:
             position = accountM.positionlist[ticker]
             accountM.balance += position.net_shares * div_lookup.loc[date.date()]
 
-        extreme_event = (f_val <= lower) or (f_val >= upper)
-        if extreme_event:
+        opposite_signs = (m_val * f_val) < 0
+        if opposite_signs:
             if ticker not in accountM.positionlist:
                 accountM.positionlist[ticker] = T.AssetPosition(accountM, ticker)
             position = accountM.positionlist[ticker]
@@ -96,7 +95,7 @@ def force_noopp(amount: float, Xshares: float,
     num_stoploss, num_takeprofit = 0, 0
     for _, row in stockpricesdf.iterrows():
         date, price = row['Date'], row['Close']
-        m_val, f_val = row['Momentum'], row['Force']
+        f_val = row['Force']
         lower, upper = row['Force 2.5pct'], row['Force 97.5pct']
         last_price = price
         
@@ -109,10 +108,10 @@ def force_noopp(amount: float, Xshares: float,
             if ticker not in accountM.positionlist:
                 accountM.positionlist[ticker] = T.AssetPosition(accountM, ticker)
             position = accountM.positionlist[ticker]
-            if m_val < 0 and f_val > 0:
+            if f_val > 0:
                 position.buy(Xshares, price, date)
                 ordbuy += 1
-            elif m_val > 0 and f_val < 0:
+            elif f_val < 0:
                 position.sell(Xshares, price, date)
                 ordsell += 1
 
@@ -139,6 +138,7 @@ if __name__ == "__main__":
     forNE_return, forNE_tradedata = force_noextreme(initial_amount, Xshares=10, account_name='Force without extreme')
     forNO_return, forNO_tradedata = force_noopp(initial_amount, Xshares=10, account_name='Force without opposite')
 
+    print(f"\n--- Results ---")
     print(f"Force strategy without extreme MWR: {forNE_return:.2f}%")
     print(forNE_tradedata)
     print(f"Force strategy without opposite signs MWR: {forNO_return:.2f}%")
