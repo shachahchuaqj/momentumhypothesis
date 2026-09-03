@@ -54,7 +54,7 @@ Force with Take Profit and No Stop Loss MWR: 0.82%
 Interestingly, trading on these extreme events alone seemed to perform way worse than DCA or even just simply buying and holding a lump sum. The best of the "force" strategies was to implement take-profit but not enforce any stop-loss; even then, the MWR was only 0.82%.
 Of course, the thresholds for the stop-loss and take-profit, as well as how many shares are bought/sold during an extreme event can be varied to find an "optimal" strategy, but this still seems insufficient to fix the huge discrepancy with the "lazier" yet more profitable approaches.
 
-Another two strategies were then tested: one where only the requirement that an extreme event must occur is dropped, and another where only the requirement that the signs of the "force" and "momentum" are opposite is dropped. Specifically for the latter, a long buy is executed if the "force" is positive, and a short sell if the "force" is negative.
+Another two strategies were then tested: one where only the requirement that an extreme event must occur is dropped, and another where only the requirement that the signs of the "force" and "momentum" are opposite is dropped. Specifically for the latter, a long buy is executed if the "force" is positive, and a short sell if the "force" is negative. In neither is take-profits enabled.
 
 ```
 --- Results ---
