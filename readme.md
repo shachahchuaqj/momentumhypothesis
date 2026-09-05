@@ -64,4 +64,38 @@ Force strategy without opposite signs MWR: 2.31%
 {'Long buys executed': 144, 'Short sells executed': 142, 'Stop losses enforced': 15, 'Take-profits enforced': 0}
 ```
 
-So now it seems that just purely looking at the direction of the force, rather than requiring that it have opposite signs with the momentum, is much better (although still nowhere near DCA). Over-enforcing the force-momentum trades without the need for extremity, on the other hand, led to way more stop-losses and a much worse MWR.
+So now it seems that just purely looking at the direction of the force, rather than requiring that it have opposite signs with the momentum, is much better at 2.31% MWR (although still nowhere near DCA).
+
+Over-enforcing the force-momentum trades without the need for extremity, on the other hand, led to way more stop-losses and a much worse MWR. In fact, because this strategy led to a trade on average every 2-3 trading days over a time period of about 15 years, having this many trades would actually lead to non-negligible transaction costs (which was ignored here) making the -3.83% MWR an actually optimistic result.
+
+Finally, one last strategy which entirely does not require "force" is tested. This pure "momentum" strategy involves buying and selling some number of shares whenever the "momentum" changes signs (which happens whenever the 5-day simple growth rate changes signs). This time, instead of a fixed number of shares being bought or sold each trade, the number of shares is proportional to the "impulse", which is the change in "momentum" during the crossover. The proportionality constant is an argument `k: float`. It should also be noted that the number of shares that can be traded is capped at the size of the current position, so that a long does not flip into a short and vice versa.
+
+Varying the value of `k`, this strategy's MWR is maximised at around `k = 24`, and the results for this `k` is shown below. Stop-loss is still enforced when the unrealised P/L drops below -50%.
+
+```
+--- Results ---
+Momentum MWR: 17.31%
+{'Buys executed': 531, 'Sells executed': 531, 'Stop losses enforced': 18, 'Take-profits enforced': 0}
+```
+
+It is notable that the number of buys and the number of sell trades executed is the same (and for other values of `k`, they only differed by 1), which makes sense since a trade can only happen when the "momentum" crosses over 0, and so a buy trade must be followed by a sell, which then must be followed by a buy, and so on.
+
+Logically then, the MWR is maximised if the `k` chosen can maximise profits during longs / shorts (whichever it is, depending on what the first trade is), while minimising the damage during a catastrophic event when a stop-loss would be enforced. It might just happen that `k == 24` is a good enough number to maximise the MWR at 17.31% given the dataset, but of course this optimal value of `k` would differ for different stocks, not to mention that `k == 24` is only known to be optimal in retrospect, given the entire 15-year price history. Hence, for this strategy to be meaningfully implemented, this problem of finding a good value of `k` would have to be solved first.
+
+## Figures
+
+![Force bands](plots/force_bands.png)
+
+Plot of the 2.5-th and 97.5-th percentile "force" bands against time for SPY.
+
+![Comparison between strategies](plots/mwr_comparison.png)
+
+Comparison of the different strategies tested.
+
+![Comparison of k values](plots/k_sensitivity.png)
+
+Plot of the MWR of the momentum-only strategy as k is varied.
+
+![Trade timings](plots/all_strategies_trades.png)
+
+Plot of when trades were executed for lump sum, DCA, and momentum-only strategies.
