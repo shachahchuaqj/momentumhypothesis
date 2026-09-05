@@ -86,16 +86,16 @@ Logically then, the MWR is maximised if the `k` chosen can maximise profits duri
 
 ![Force bands](plots/force_bands.png)
 
-Plot of the 2.5-th and 97.5-th percentile "force" bands against time for SPY.
+**Figure 1:** Plot of the 2.5-th and 97.5-th percentile "force" bands against time for SPY.
 
 ![Comparison between strategies](plots/mwr_comparison.png)
 
-Comparison of the different strategies tested.
+**Figure 2:** Comparison of the different strategies tested.
 
 ![Comparison of k values](plots/k_sensitivity.png)
 
-Plot of the MWR of the momentum-only strategy as k is varied.
+**Figure 3:** Plot of the MWR of the momentum-only strategy as k is varied.
 
 ![Trade timings](plots/all_strategies_trades.png)
 
-Plot of when trades were executed for lump sum, DCA, and momentum-only strategies.
+**Figure 4:** Plot of when trades were executed for lump sum, DCA, and momentum-only strategies.
